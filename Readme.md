@@ -6,25 +6,25 @@
 
 Установить Node JS для Linux node.js.
 
-Заходим на nodejs.org
+Заходим на nodejs.org;
 
-Копируем ссылку на исходники
+Копируем ссылку на исходники;
 
-wget http://nodejs.org/dist/node-v0.1.97.tar.gz
+wget http://nodejs.org/dist/node-v0.1.97.tar.gz;
 
-tar -xvf node-v0.1.97.tar.gz
+tar -xvf node-v0.1.97.tar.gz;
 
-//либо делаем так
+//либо делаем так;
 
-git clone git://github.com/ry/node.git (если git есть)
+git clone git://github.com/ry/node.git (если git есть);
 
-cd node*
+cd node*;
 
-./configure
+./configure;
 
-make
+make;
 
-make install
+make install;
 
 ###
 Установка пакетов проекта, в директории проекта: npm i -DE;
