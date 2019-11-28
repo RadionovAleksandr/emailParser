@@ -4,5 +4,5 @@
 Статья: http://prgssr.ru/development/vvedenie-v-paketnyj-menedzher-npm-dlya-nachinayushih.html
 
 ###
-Установка пакетов проекта, в директории проекта: npm i -DE;
+Установка пакетов проекта, в директории проекта: npm i -DE;/n\n
 Запуск проекта: node index.js
