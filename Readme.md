@@ -11,4 +11,5 @@
 
 ###
 В директории config/default.js  находятся настройки читаемой почты radionovAlek@yandex.ru;
+
 В директории core/attacments  грузятся вложения писем.
