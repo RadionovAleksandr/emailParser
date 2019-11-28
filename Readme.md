@@ -6,7 +6,7 @@
 
 Установить Node JS для Linux node.js.
 
-    Заходим на nodejs.org;
+    Заходим на https://nodejs.org/en/.;
 
     Копируем ссылку на исходники;
 
