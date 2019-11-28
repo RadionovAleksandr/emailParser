@@ -4,7 +4,7 @@
 
 Статья: http://prgssr.ru/development/vvedenie-v-paketnyj-menedzher-npm-dlya-nachinayushih.html.
 
-Установить Node JS для Linux node.js.
+Установить Node JS для Linux:
 
     Заходим на https://nodejs.org/en/.;
 
