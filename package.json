@@ -1,0 +1,32 @@
+{
+  "name": "sksupportassistant",
+  "version": "1.1.0",
+  "description": "Simple app to assist SK analyst to do tech support",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha || true"
+  },
+  "author": "rezox",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "body-parser": "^1.19.0",
+    "config": "^3.2.4",
+    "express": "^4.17.1",
+    "log4js": "^5.1.0",
+    "mail-listener2": "^0.3.1",
+    "moment": "^2.24.0",
+    "mongodb": "^3.3.3",
+    "node-emoji": "^1.10.0",
+    "node-telegram-bot-api": "^0.30.0",
+    "request-promise-native": "^1.0.8",
+    "rss-parser": "^3.7.2",
+    "uuid": "^3.3.3"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "jquery": "3.4.1",
+    "mocha": "^6.2.1",
+    "request": "2.88.0"
+  }
+}

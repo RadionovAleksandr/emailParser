@@ -1,0 +1,10 @@
+{
+    "Email": {
+        "enabled": true,
+        "host": "mail.gmail.com",
+        "port": 465,
+        "secureConnection": true,
+        "user": "radionov.an1993@gmail.com",
+        "password": "1239636216White"
+    }
+}
