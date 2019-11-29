@@ -4,7 +4,7 @@
         "host": "imap.yandex.ru",
         "port": 993,
         "secureConnection": true,
-        "user": "Radionovalek@yandex.ru",
-        "password": "1239636216"
+        "user": "testSmartTracker@yandex.ru",
+        "password": "qwertyST"
     }
 }
