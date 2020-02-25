@@ -1,17 +1,17 @@
 //import common app settings (shutdown etc.)
 require("./core/sysSettings.js");
-require("./core/smart-tracker.js");
+// require("./core/smart-tracker.js");
 const axios = require('axios');
 const fs = require('fs');
 const request = require('request-promise-native');
-
+const urlST = require('./core/config-ST.js')
 
 //import log4j subsystem
 const logger = require("./core/logger.js");
-logger.info(`Launch application`);
 const moment = require('moment');
 
-//отработка события
+logger.info(`Launch application`);
+logger.info(' urlST ' + urlST);
 
 (async() => {
     let responseClientsArr;
@@ -39,9 +39,9 @@ const moment = require('moment');
     };
 
     let userCookie = await globalLogin({
-        appUrl: `http://erp.point.smart-consulting.ru/`,
+        appUrl: urlST,
         username: 'aradionov',
-        password: 'aradionov'
+        password: 'rgF732aMXs'
     });
 
     // по циклу гружу картинки на сервер
@@ -53,7 +53,7 @@ const moment = require('moment');
             formData.attachments = fs.createReadStream(__dirname + `/attachments/${element.fileName}`);
 
             let attachment = await request.post({
-                url: 'http://erp.point.smart-consulting.ru/rest/file/upload',
+                url: urlST + '/rest/file/upload',
                 formData: formData,
                 headers: {
                     "Cookie": userCookie,
@@ -84,15 +84,16 @@ const moment = require('moment');
 
     //создаю обращение если выполняются условия
     async function createAppeal(parsedMessage, attachments) {
-        logger.info(`START createAppeal `);
+        logger.info(`START checkAppeal `);
 
         let autorId;
         let autorEmail;
         let organizathionId;
+        let urlClient = urlST + 'rest/data/entity';
 
-        responseClientsArr = await axios.post(`http://erp.point.smart-consulting.ru/rest/data/entity`, {
+        responseClientsArr = await axios.post(urlClient, {
             "entityId": "e333d3ed-3ce3-fab3-33b3-b3fc3b3dd3a3",
-            "attributes": ["username", "fio", "Post", "groupsOfUser", "groupsOfUser.groupId", "orgRolesOfUser.organizationrolename", "email", "UserSetting.customer.Org", "deleted"],
+            "attributes": ["username", "fio", "Post", "groupsOfUser", "groupsOfUser.groupId", "orgRolesOfUser.organizationrolename", "email", "UserSetting.customer.Org", "UserSetting.Client.Emails", "deleted"],
             "bindType": "entity",
             "gridObjectId": "e618eb4f-5216-75f2-e595-715752fae654",
         }, {
@@ -107,7 +108,13 @@ const moment = require('moment');
                 if (!!element[5]) {
                     element[5].forEach(item => {
                         if (item == 'customer') {
-                            if (element[7] == parsedMessage.from[0].address) {
+                            // logger.info(' element[4] ' + element[4]);
+                            // logger.info(' element[5] ' + element[5]);
+                            // logger.info(' element[6] ' + element[6]);
+                            // logger.info(' email ' + element[7]);
+                            // logger.info('element[8] ' + element[8]);
+                            // logger.info('element[9] ' + element[9]);
+                            if (element[7].trim() === parsedMessage.from[0].address.trim()) {
                                 autorEmail = parsedMessage.from[0].address;
                                 organizathionId = element[8].objectId;
                                 autorId = element[0];
@@ -122,16 +129,16 @@ const moment = require('moment');
 
         //теперь мы знаем, это точно письмо от нашего клиента
         if (autorId !== undefined && autorId !== false) {
+            logger.info('Create appeal')
             let isAppeal = true; //это обращение
+            let urlAppeal = urlST + 'rest/data/entity';
 
             //проверяем создана обращение с подобной темой и подобным автором
-            let allAppeal = await axios.post(`http://erp.point.smart-consulting.ru/rest/data/entity`, {
+            let allAppeal = await axios.post(urlAppeal, {
                 "entityId": "bdcd08c0-cae6-1e6e-3ab2-84d9e2f16ccd",
                 "gridObjectId": "197595ce-9d83-fbed-0098-dab05e23996e",
                 "attributes": ["Title", "Task.Status.Name", "NeedInfo", "InternalNumber"],
-
-                "bindType": "entity",
-
+                "bindType": "entity"
             }, {
                 headers: {
                     "Content-Type": "application/json;charset=UTF-8",
@@ -154,8 +161,9 @@ const moment = require('moment');
                     // logger.info(`отправяю сообщение к обращению`);
                     // logger.info(`objectId: ${element[0]} "needInfo": ${element[3]} attachments ${attachments}`);
                     isAppeal = false;
+                    let urlSentAppeal = urlST + 'rest/processes/createFast/0a5aa834-d443-27bc-e963-5820a75b5700';
 
-                    let sentAppeal = await axios.post(`http://erp.point.smart-consulting.ru/rest/processes/createFast/0a5aa834-d443-27bc-e963-5820a75b5700`, {
+                    let sentAppeal = await axios.post(urlSentAppeal, {
                         "order": element[0],
                         "text": parsedMessage.text,
                         "forClient": false,
@@ -194,7 +202,8 @@ const moment = require('moment');
                 let pullModul = [];
 
                 //из контракта клиента набираем данные для обращения
-                responseСontracts = await axios.post(`http://erp.point.smart-consulting.ru/rest/data/entity`, {
+                let urlContract = urlST + 'rest/data/entity';
+                responseСontracts = await axios.post(urlContract, {
                     "entityId": "e053e584-d64a-e44f-af8c-7a79c540d594",
                     "limit": 35,
                     "offset": 0,
@@ -245,7 +254,8 @@ const moment = require('moment');
 
                 setTimeout(async() => {
                     // logger.info(`attachments ${attachments}`)
-                    let sentAppeal = await axios.post(`http://erp.point.smart-consulting.ru/rest/data/entity/${myUUID}?formId=0446c743-85a8-4f29-638f-ecca73b02cda`, {
+                    let urlAppealSent = urlST + `rest/data/entity/${myUUID}?formId=0446c743-85a8-4f29-638f-ecca73b02cda`;
+                    let sentAppeal = await axios.post(urlAppealSent, {
                         "AnswerDate": "",
                         "CreateDate": `${timestamp}`,
                         "DateSLA": "",
@@ -272,7 +282,7 @@ const moment = require('moment');
                 }, 2000);
             }
         };
-        logger.info(`FINISH createAppeal `);
+        logger.info(`FINISH checkAppeal `);
     };
 })();
 
