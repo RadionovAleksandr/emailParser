@@ -13,5 +13,6 @@ node index.js
 
 ###
 В директории config/default.js  находятся настройки читаемой почты логин:testSmartTracker@yandex.ru, пароль: qwertyST;
+В директории core/config-ST.js  находятся настройки адреса url на клотором будут создаваться и обновлятся обращения
 
 В директории core/attacments  грузятся вложения писем.
