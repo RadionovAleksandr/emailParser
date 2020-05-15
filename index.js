@@ -4,7 +4,18 @@ require("./core/sysSettings.js");
 const axios = require('axios');
 const fs = require('fs');
 const request = require('request-promise-native');
-const urlST = require('./core/config-ST.js')
+const urlST = require('./core/config-ST.js');
+
+// {
+//     "Email": {
+//         "enabled": true,
+//         "host": "mail.smart-consulting.ru",
+//         "port": 993,
+//         "secureConnection": true,
+//         "user": "testSmartTracker@yandex.ru",
+//         "password": "qwertyST"
+//     }
+// }
 
 //import log4j subsystem
 const logger = require("./core/logger.js");
@@ -41,7 +52,7 @@ logger.info(' urlST ' + urlST);
     let userCookie = await globalLogin({
         appUrl: urlST,
         username: 'aradionov',
-        password: 'rgF732aMXs'
+        password: 'aradionov'
     });
 
     // по циклу гружу картинки на сервер
@@ -128,162 +139,173 @@ logger.info(' urlST ' + urlST);
             // logger.info(`organizathionId ${organizathionId}`);
 
         //теперь мы знаем, это точно письмо от нашего клиента
-        if (autorId !== undefined && autorId !== false) {
-            logger.info('Create appeal')
-            let isAppeal = true; //это обращение
-            let urlAppeal = urlST + 'rest/data/entity';
+        // if (autorId !== undefined && autorId !== false) {
+        logger.info('Create appeal')
+        let isAppeal = true; //это обращение
+        let urlAppeal = urlST + 'rest/data/entity';
 
-            //проверяем создана обращение с подобной темой и подобным автором
-            let allAppeal = await axios.post(urlAppeal, {
-                "entityId": "bdcd08c0-cae6-1e6e-3ab2-84d9e2f16ccd",
-                "gridObjectId": "197595ce-9d83-fbed-0098-dab05e23996e",
-                "attributes": ["Title", "Task.Status.Name", "NeedInfo", "InternalNumber"],
-                "bindType": "entity"
+        //проверяем создана обращение с подобной темой и подобным автором
+        let allAppeal = await axios.post(urlAppeal, {
+            "entityId": "bdcd08c0-cae6-1e6e-3ab2-84d9e2f16ccd",
+            "gridObjectId": "197595ce-9d83-fbed-0098-dab05e23996e",
+            "attributes": ["Title", "Task.Status.Name", "NeedInfo", "InternalNumber"],
+            "bindType": "entity"
+        }, {
+            headers: {
+                "Content-Type": "application/json;charset=UTF-8",
+                "Cookie": userCookie
+            }
+        });
+
+        allAppeal.data.forEach(async element => {
+            // logger.info(parsedMessage.subject)
+            // logger.info(element[4]);
+            let parsedTitle;
+            if (parsedMessage.subject) {
+                // logger.info(parsedMessage.subject.indexOf(element[4]));
+                parsedTitle = parsedMessage.subject;
+            } else {
+                parsedTitle = '';
+            }
+            if (autorEmail == parsedMessage.from[0].address && parsedTitle.indexOf(element[4]) >= 0 && element[4] !== false && element[4] !== '') {
+
+                // logger.info(`отправяю сообщение к обращению`);
+                // logger.info(`objectId: ${element[0]} "needInfo": ${element[3]} attachments ${attachments}`);
+                isAppeal = false;
+                let urlSentAppeal = urlST + 'rest/processes/createFast/0a5aa834-d443-27bc-e963-5820a75b5700';
+
+                let sentAppeal = await axios.post(urlSentAppeal, {
+                    "order": element[0],
+                    "text": parsedMessage.text,
+                    "forClient": false,
+                    "needInfo": element[3],
+                    "file": attachments
+                }, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Cookie": userCookie
+                    }
+                });
+            }
+        })
+
+        if (!!isAppeal) {
+            //var uuid = require('uuid'); 
+            let myUUID = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0,
+                    v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+            //var myUUID = v4uuid;
+            let current_datetime = new Date();
+
+            let formatted_date = () => {
+                return current_datetime.getFullYear() + "-" + (current_datetime.getMonth() + 1) + "-" + current_datetime.getDate() + " " + current_datetime.getHours() + ":" + current_datetime.getMinutes() + ":" + current_datetime.getSeconds()
+            }
+            let timestamp = formatted_date();
+
+            let contractOrganizathion;
+            let product;
+            let modul;
+
+            let pullContract = [];
+            let pullProduct = [];
+            let pullModul = [];
+
+            //из контракта клиента набираем данные для обращения
+            let urlContract = urlST + 'rest/data/entity';
+            responseСontracts = await axios.post(urlContract, {
+                "entityId": "e053e584-d64a-e44f-af8c-7a79c540d594",
+                "limit": 35,
+                "offset": 0,
+                "attributes": ["customer.objectId", "MainProjectCode.Direction", "MainProjectCode.Product", "ProcessStarted", "Name", "InternalNumber", "Form", "Subform.Name", "Number", "ActingOn", "Creator", "Manager", "Deal", "Status.Name", "StageReconciliation.defaultLabel", "objectId", "deleted"],
+                "bindType": "entity",
+                "gridObjectId": "d869a231-e8a1-f8c5-51ca-c90a5fbf300b",
             }, {
                 headers: {
                     "Content-Type": "application/json;charset=UTF-8",
                     "Cookie": userCookie
                 }
             });
+            responseСontracts.data.forEach(element => {
+                if (element[1] == organizathionId) {
 
-            allAppeal.data.forEach(async element => {
-                // logger.info(parsedMessage.subject)
-                // logger.info(element[4]);
-                let parsedTitle;
-                if (parsedMessage.subject) {
-                    // logger.info(parsedMessage.subject.indexOf(element[4]));
-                    parsedTitle = parsedMessage.subject;
-                } else {
-                    parsedTitle = '';
+                    for (key in element[1]) {};
+                    pullContract.push(element[0]);
+                    if (!!element[2].objectId) {
+                        pullProduct.push(element[2].objectId);
+                    };
+                    if (!!element[3].objectId) {
+                        pullModul.push(element[3].objectId);
+
+                    };
+
                 }
-                if (autorEmail == parsedMessage.from[0].address && parsedTitle.indexOf(element[4]) >= 0 && element[4] !== false && element[4] !== '') {
+            });
 
-                    // logger.info(`отправяю сообщение к обращению`);
-                    // logger.info(`objectId: ${element[0]} "needInfo": ${element[3]} attachments ${attachments}`);
-                    isAppeal = false;
-                    let urlSentAppeal = urlST + 'rest/processes/createFast/0a5aa834-d443-27bc-e963-5820a75b5700';
+            if (pullContract.length == 1) {
+                contractOrganizathion = pullContract[0];
+            } else {
+                contractOrganizathion = null;
+            };
 
-                    let sentAppeal = await axios.post(urlSentAppeal, {
-                        "order": element[0],
-                        "text": parsedMessage.text,
-                        "forClient": false,
-                        "needInfo": element[3],
-                        "file": attachments
-                    }, {
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Cookie": userCookie
-                        }
-                    });
-                }
-            })
+            if (pullProduct.length == 1) {
+                product = pullProduct[0];
+            } else {
+                product = null;
+            };
 
-            if (!!isAppeal) {
-                //var uuid = require('uuid'); 
-                let myUUID = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                    var r = Math.random() * 16 | 0,
-                        v = c == 'x' ? r : (r & 0x3 | 0x8);
-                    return v.toString(16);
-                });
-                //var myUUID = v4uuid;
-                let current_datetime = new Date();
+            if (pullModul.length == 1) {
+                modul = pullModul[0];
+            } else {
+                modul = null;
+            };
 
-                let formatted_date = () => {
-                    return current_datetime.getFullYear() + "-" + (current_datetime.getMonth() + 1) + "-" + current_datetime.getDate() + " " + current_datetime.getHours() + ":" + current_datetime.getMinutes() + ":" + current_datetime.getSeconds()
-                }
-                let timestamp = formatted_date();
+            logger.info(`орг: ${contractOrganizathion} продукт:${product} модуль:${modul} вложение: ${attachments}`)
 
-                let contractOrganizathion;
-                let product;
-                let modul;
+            setTimeout(async() => {
+                // logger.info(`attachments ${attachments}`)
 
-                let pullContract = [];
-                let pullProduct = [];
-                let pullModul = [];
-
-                //из контракта клиента набираем данные для обращения
-                let urlContract = urlST + 'rest/data/entity';
-                responseСontracts = await axios.post(urlContract, {
-                    "entityId": "e053e584-d64a-e44f-af8c-7a79c540d594",
-                    "limit": 35,
-                    "offset": 0,
-                    "attributes": ["customer.objectId", "MainProjectCode.Direction", "MainProjectCode.Product", "ProcessStarted", "Name", "InternalNumber", "Form", "Subform.Name", "Number", "ActingOn", "Creator", "Manager", "Deal", "Status.Name", "StageReconciliation.defaultLabel", "objectId", "deleted"],
-                    "bindType": "entity",
-                    "gridObjectId": "d869a231-e8a1-f8c5-51ca-c90a5fbf300b",
+                let urlAppealSent = urlST + `rest/data/entity/${myUUID}?formId=0446c743-85a8-4f29-638f-ecca73b02cda`;
+                let sentAppeal = await axios.post(urlAppealSent, {
+                    "AnswerDate": "",
+                    "CreateDate": `${timestamp}`,
+                    "DateSLA": "",
+                    "Descripthion": `${parsedMessage.text}`,
+                    "FileST": attachments,
+                    "JiraLink": "",
+                    "ResponseDateDesired": "",
+                    "Title": `${parsedMessage.subject}`,
+                    "autor": `${autorId}`,
+                    "contract": `${contractOrganizathion}`,
+                    "entityId": "bdcd08c0-cae6-1e6e-3ab2-84d9e2f16ccd",
+                    "modul": `${modul}`,
+                    "objectId": `${myUUID}`,
+                    "priority": "",
+                    "product": `${product}`,
+                    "purpose": "",
+                    "EmailWithoutAutor": `${parsedMessage.from[0].address}`,
                 }, {
                     headers: {
-                        "Content-Type": "application/json;charset=UTF-8",
+                        "Content-Type": "application/json",
                         "Cookie": userCookie
                     }
                 });
-                responseСontracts.data.forEach(element => {
-                    if (element[1] == organizathionId) {
 
-                        for (key in element[1]) {};
-                        pullContract.push(element[0]);
-                        if (!!element[2].objectId) {
-                            pullProduct.push(element[2].objectId);
-                        };
-                        if (!!element[3].objectId) {
-                            pullModul.push(element[3].objectId);
 
-                        };
-
-                    }
-                });
-
-                if (pullContract.length == 1) {
-                    contractOrganizathion = pullContract[0];
-                } else {
-                    contractOrganizathion = null;
-                };
-
-                if (pullProduct.length == 1) {
-                    product = pullProduct[0];
-                } else {
-                    product = null;
-                };
-
-                if (pullModul.length == 1) {
-                    modul = pullModul[0];
-                } else {
-                    modul = null;
-                };
-
-                logger.info(`орг: ${contractOrganizathion} продукт:${product} модуль:${modul} вложение: ${attachments}`)
-
-                setTimeout(async() => {
-                    // logger.info(`attachments ${attachments}`)
-                    let urlAppealSent = urlST + `rest/data/entity/${myUUID}?formId=0446c743-85a8-4f29-638f-ecca73b02cda`;
-                    let sentAppeal = await axios.post(urlAppealSent, {
-                        "AnswerDate": "",
-                        "CreateDate": `${timestamp}`,
-                        "DateSLA": "",
-                        "Descripthion": `${parsedMessage.text}`,
-                        "FileST": attachments,
-                        "JiraLink": "",
-                        "ResponseDateDesired": "",
-                        "Title": `${parsedMessage.subject}`,
-                        "autor": `${autorId}`,
-                        "contract": `${contractOrganizathion}`,
-                        "entityId": "bdcd08c0-cae6-1e6e-3ab2-84d9e2f16ccd",
-                        "modul": `${modul}`,
-                        "objectId": `${myUUID}`,
-                        "priority": "",
-                        "product": `${product}`,
-                        "purpose": ""
-                    }, {
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Cookie": userCookie
-                        }
-
-                    });
-                }, 2000);
-            }
-        };
+                timestamp = null;
+                parsedMessage.text = null;
+                attachments = null;
+                contractOrganizathion = null;
+                modul = null;
+                myUUID = null;
+                product = null
+            }, 2000);
+        }
+        // };
         logger.info(`FINISH checkAppeal `);
     };
+
 })();
 
 async function isWorkTime() {

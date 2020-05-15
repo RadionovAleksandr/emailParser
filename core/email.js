@@ -50,7 +50,9 @@ mailListener.on("mail", function(mail, seqno, attributes) {
     emailMonitor.emit("newMessage", mail, seqno, attributes);
 });
 
+
 mailListener.on("attachment", function(attachment) {
+    // logger.info('attachment', attachment);
     logger.info(`attachment.path ${attachment.path}`);
 });
 
